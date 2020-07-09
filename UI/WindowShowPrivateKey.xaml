@@ -1,0 +1,19 @@
+﻿<Window x:Class="AnoBIT_Wallet.WindowShowPrivateKey"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Show Private Key" Height="285.692" Width="486"  ResizeMode="NoResize" Icon="pack://siteoforigin:,,,/Resources/logo_ico.ico">
+    <Grid>
+        <TextBlock Height="23" HorizontalAlignment="Stretch" Margin="10,10,10,0" Name="textBlockDescription" Text="To show the private key, you have to enter your wallet password." TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" Width="Auto" />
+        <TextBox HorizontalAlignment="Stretch" Margin="87,141,10,63" Name="textBoxPrivateKey" IsReadOnly="True" />
+        <TextBlock Height="Auto" HorizontalAlignment="Stretch" Margin="0,0,0,10" Name="textBlockNote" Text="NOTE: Anyone who knows private key of this address can spend its funds!" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Bottom" FontStyle="Italic" />
+        <Label Content="Private Key:" Height="28" HorizontalAlignment="Left" Margin="-1,142,0,0" Name="labelPrivateKey" VerticalAlignment="Top" HorizontalContentAlignment="Right" Width="84" />
+        <Label Content=":Address" Height="28" HorizontalAlignment="Left" Margin="3,48,0,0" Name="labelAddressNote" VerticalAlignment="Top" Width="80" FlowDirection="RightToLeft" />
+        <Label Height="28" HorizontalAlignment="Left" Margin="87,48,0,0" Name="labelAddress" VerticalAlignment="Top" Width="383" />
+        <Label Content=":Non-Base58" Height="28" HorizontalAlignment="Left" Margin="0,81,0,0" x:Name="labelNonBase58" VerticalAlignment="Top" Width="84" FlowDirection="RightToLeft" />
+        <TextBox Height="24" Margin="87,83,10,0" x:Name="textBoxNonBase58" VerticalAlignment="Top" IsReadOnly="True" />
+        <Label Content=":Public Key" Height="28" HorizontalAlignment="Left" Margin="0,109,0,0" x:Name="labelPublicKey" VerticalAlignment="Top" Width="84" FlowDirection="RightToLeft" />
+        <TextBox Height="24" Margin="87,112,10,0" x:Name="textBoxPublicKey" VerticalAlignment="Top" IsReadOnly="True" />
+        <RadioButton x:Name="radioButtonWifFormat" Content="Wallet Import Format (WIF)" HorizontalAlignment="Left" Margin="87,0,0,37" VerticalAlignment="Bottom" Checked="FormatChange" Width="193" Height="21"/>
+        <RadioButton x:Name="radioButtonHexFormat" Content="Hexadecimal Format" HorizontalAlignment="Left" Margin="314,0,0,37" VerticalAlignment="Bottom" Checked="FormatChange" IsChecked="True" Width="156" Height="21"/>
+    </Grid>
+</Window>

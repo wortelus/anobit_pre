@@ -1,0 +1,23 @@
+﻿<Window x:Class="AnoBIT_Wallet.WindowAddContact"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Contact" Height="320" Width="300" ResizeMode="NoResize" Topmost="False" WindowStyle="SingleBorderWindow" Icon="pack://siteoforigin:,,,/Resources/logo_ico.ico">
+    <Grid>
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="12,44,0,0" Name="textBoxName" VerticalAlignment="Top" Width="254" TabIndex="1" />
+        <Label Content="Name:" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="10,10,0,0" Name="labelName" VerticalAlignment="Top" />
+        <Label Content="Add Flag" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="10,154,0,0" Name="labelFlag" VerticalAlignment="Top" />
+        <RadioButton Content="White" Height="16" HorizontalAlignment="Left" IsChecked="True" Margin="12,188,0,0" Name="radioButtonWhite" VerticalAlignment="Top" Checked="radioButtonWhite_Checked" />
+        <RadioButton Content="Red" Height="16" HorizontalAlignment="Left" Margin="12,210,0,0" Name="radioButtonRed" VerticalAlignment="Top" Checked="radioButtonRed_Checked" />
+        <RadioButton Content="Orange" Height="16" HorizontalAlignment="Left" Margin="12,232,0,0" Name="radioButtonOrange" VerticalAlignment="Top" Checked="radioButtonOrange_Checked" />
+        <RadioButton Content="Yellow" Height="16" HorizontalAlignment="Left" Margin="12,254,0,0" Name="radioButtonYellow" VerticalAlignment="Top" Checked="radioButtonYellow_Checked" />
+        <RadioButton Content="Green" Height="16" HorizontalAlignment="Left" Margin="103,188,0,0" Name="radioButtonGreen" VerticalAlignment="Top" Checked="radioButtonGreen_Checked" />
+        <RadioButton Content="Turqoise" Height="16" HorizontalAlignment="Left" Margin="103,210,0,0" Name="radioButtonTurqoise" VerticalAlignment="Top" Checked="radioButtonTurqoise_Checked" />
+        <RadioButton Content="Blue" Height="16" HorizontalAlignment="Left" Margin="103,232,0,0" Name="radioButtonBlue" VerticalAlignment="Top" Checked="radioButtonBlue_Checked" />
+        <RadioButton Content="Pink" Height="16" HorizontalAlignment="Left" Margin="103,254,0,0" Name="radioButtonPink" VerticalAlignment="Top" Checked="radioButtonPink_Checked" />
+        <RadioButton Content="Purple" Height="16" HorizontalAlignment="Left" Margin="195,188,0,0" Name="radioButtonPurple" VerticalAlignment="Top" Checked="radioButtonPurple_Checked" />
+        <RadioButton Content="Grey" Height="16" HorizontalAlignment="Left" Margin="195,210,0,0" Name="radioButtonGrey" VerticalAlignment="Top" Checked="radioButtonGrey_Checked" />
+        <Button Content="Confirm" Height="23" HorizontalAlignment="Left" Margin="191,247,0,0" Name="buttonConfirm" VerticalAlignment="Top" Width="75" Click="buttonConfirm_Click" />
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="12,125,0,0" Name="textBoxAddress" VerticalAlignment="Top" Width="254" TabIndex="2" />
+        <Label Content="Address:" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="12,91,0,0" Name="labelAddress" VerticalAlignment="Top" />
+    </Grid>
+</Window>

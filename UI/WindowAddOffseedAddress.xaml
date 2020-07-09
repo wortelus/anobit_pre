@@ -1,0 +1,19 @@
+﻿<Window x:Class="AnoBIT_Wallet.WindowAddOffseedAddress"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add Offseed Address" Height="397" Width="396" Icon="pack://siteoforigin:,,,/Resources/logo_ico.ico" ResizeMode="NoResize">
+    <Grid>
+        <RadioButton Content="Import Watch-Only Address" Height="16" HorizontalAlignment="Left" Margin="12,117,0,0" Name="radioButtonImportWatchAddress" VerticalAlignment="Top" />
+        <RadioButton Content="Import WIF Private Key" Height="16" HorizontalAlignment="Left" Margin="12,12,0,0" Name="radioButtonIWIF" VerticalAlignment="Top" IsChecked="True" />
+        <TextBox Height="24" HorizontalAlignment="Left" Margin="12,36,0,0" Name="textBoxWIF" VerticalAlignment="Top" Width="348" />
+        <PasswordBox Height="24" HorizontalAlignment="Left" Margin="118,68,0,0" Name="passwordBoxWIF" VerticalAlignment="Top" Width="242" />
+        <Label Content="Wallet Password:" Height="28" HorizontalAlignment="Left" Margin="12,66,0,0" Name="labelWalletPassword" VerticalAlignment="Top" />
+        <TextBox Height="24" HorizontalAlignment="Left" Margin="10,141,0,0" Name="textBoxWatchAddress" VerticalAlignment="Top" Width="350" />
+        <RadioButton Content="Import Watch-Only Public Key" Height="16" HorizontalAlignment="Left" Margin="12,190,0,0" Name="radioButtonIPBK" VerticalAlignment="Top" />
+        <TextBox Height="24" HorizontalAlignment="Left" Margin="12,214,0,0" Name="textBoxPUBLICKEY" VerticalAlignment="Top" Width="348" />
+        <Button Content="Import" Height="23" HorizontalAlignment="Right" Margin="0,0,8,8" Name="buttonImport" VerticalAlignment="Bottom" Width="75" Click="buttonImport_Click" />
+        <RadioButton Content="Create New Random Address" Height="16" HorizontalAlignment="Left" Margin="12,263,0,0" Name="radioButtonNewAddress" VerticalAlignment="Top" />
+        <PasswordBox Height="24" HorizontalAlignment="Left" Margin="118,287,0,0" Name="passwordBoxNewAddress" VerticalAlignment="Top" Width="242" />
+        <Label Content="Wallet Password:" Height="28" HorizontalAlignment="Left" Margin="12,285,0,0" Name="labelWalletPassword2" VerticalAlignment="Top" />
+    </Grid>
+</Window>

@@ -1,0 +1,68 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="AnoBIT_Wallet.WindowCreateWallet"
+        Title="New Wallet" Height="300" Width="400" ResizeMode="NoResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" Topmost="True" Icon="pack://siteoforigin:,,,/Resources/logo_ico.ico">
+    <Grid>
+        <TabControl Height="261" HorizontalAlignment="Stretch" x:Name="tabControl1" VerticalAlignment="Stretch" Width="378">
+            <TabItem Header="tabItemStart" x:Name="tabItemStart" Visibility="Collapsed">
+                <Grid>
+                    <Label Content="Select a Wallet Type" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" x:Name="labelN01" VerticalAlignment="Top" FontWeight="Bold" Width="356" />
+                    <RadioButton Content="New Wallet" Height="16" HorizontalAlignment="Left" Margin="24,50,0,0" x:Name="radioButtonNewWallet" VerticalAlignment="Top" IsChecked="True" />
+                    <RadioButton Content="Restore Wallet" Height="16" HorizontalAlignment="Left" Margin="24,82,0,0" x:Name="radioButtonRestoreWallet" VerticalAlignment="Top" />
+                    <Button Content="Next" Height="23" x:Name="buttonNext" Width="75" Click="buttonN0_Click" VerticalAlignment="Bottom" Margin="0,0,6,6" HorizontalAlignment="Right" />
+                </Grid>
+            </TabItem>
+            <TabItem Visibility="Collapsed" x:Name="tabItemCW1" Header="tabItemCW1">
+                <Grid>
+                    <Label Content="Your Seed" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" x:Name="label1" VerticalAlignment="Top" Width="356" />
+                    <Image Height="72" HorizontalAlignment="Left" Margin="6,40,0,0" x:Name="image1" Stretch="Fill" VerticalAlignment="Top" Width="72" Source="pack://siteoforigin:,,,/Resources/seed.png" />
+                    <Button Content="Next" Height="23" HorizontalAlignment="Right" Margin="0,0,6,6" x:Name="buttonCW1Next" VerticalAlignment="Bottom" Width="75" Click="buttonCW1Next_Click" />
+                    <TextBlock Height="59" HorizontalAlignment="Left" Margin="6,123,0,0" x:Name="textBlockSA" Text="Note: Save this seed. If you lose access to your wallet file, this will be the only way to recover your funds. Don't type it on website or store electronically. Write it down on paper with a pen." VerticalAlignment="Top" Width="356" FontStretch="Normal" TextWrapping="Wrap" />
+                    <TextBox Height="72" HorizontalAlignment="Left" Margin="84,40,0,0" x:Name="textBoxSeed" VerticalAlignment="Top" Width="278" IsReadOnly="True" TextWrapping="Wrap" />
+                    <Button Content="Back" Height="23" HorizontalAlignment="Right" Margin="0,0,87,6" x:Name="buttonCW1Back" VerticalAlignment="Bottom" Width="75" Click="buttonCW1Back_Click" />
+                    <Button Content="Create" Height="23" HorizontalAlignment="Right" Margin="0,0,179,6" x:Name="buttonCW1NewSeed" VerticalAlignment="Bottom" Width="75" Click="ButtonCW1NewSeed_Click" />
+                    <StackPanel Orientation="Horizontal" Margin="6,201,259,3">
+                        <TextBox x:Name="CW1txtNum" x:FieldModifier="private" Margin="5,5,0,5" Width="50" Text="0" TextChanged="txtNum_TextChanged" />
+                        <Button x:Name="CW1cmdUp" x:FieldModifier="private" Margin="5,5,0,5" Content="˄" Width="20" Click="cmdUp_Click" />
+                        <Button x:Name="CW1cmdDown" x:FieldModifier="private" Margin="0,5,0,5"  Content="˅" Width="20" Click="cmdDown_Click" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="tabItemCW2" HorizontalAlignment="Left" x:Name="tabItemCW2" VerticalAlignment="Top" Visibility="Collapsed">
+                <Grid>
+                    <Image Height="72" HorizontalAlignment="Left" Margin="6,40,0,0" x:Name="image2" Source="pack://siteoforigin:,,,/Resources/seed.png" Stretch="Fill" VerticalAlignment="Top" Width="72" />
+                    <TextBox Height="72" HorizontalAlignment="Left" IsReadOnly="False" Margin="84,40,0,0" x:Name="textBoxSeedConfirm" TextWrapping="Wrap" VerticalAlignment="Top" Width="278" IsEnabled="True" TextChanged="textBoxSeedConfirm_TextChanged" />
+                    <Label Content="Confirmation of Seed" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" x:Name="label2" VerticalAlignment="Top" Width="356" />
+                    <TextBlock FontStretch="Normal" Height="59" HorizontalAlignment="Left" Margin="6,123,0,0" x:Name="textBlock1" Text="Note: Save this seed. If you lose access to your wallet file, this will be the only way to recover your funds. Don't type it on website or store electronically. Write it down on paper with a pen." TextWrapping="Wrap" VerticalAlignment="Top" Width="356" />
+                    <Button Content="Next" Height="23" HorizontalAlignment="Right" Margin="0,0,6,6" x:Name="buttonCW2Next" VerticalAlignment="Bottom" Width="75" Click="buttonCW2Next_Click" IsEnabled="False" />
+                    <Button Content="Back" Height="23" HorizontalAlignment="Right" Margin="0,0,87,6" x:Name="buttonCW2Back" VerticalAlignment="Bottom" Width="75" Click="buttonCW2Back_Click" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="CW3" HorizontalAlignment="Left" x:Name="tabItemCW3" VerticalAlignment="Top" Visibility="Collapsed">
+                <Grid>
+                    <Label Content="Encrypt And Save" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" x:Name="label3" VerticalAlignment="Top" Width="356" />
+                    <PasswordBox Height="23" HorizontalAlignment="Right" Margin="0,40,6,0" x:Name="passwordBoxCW3Password" VerticalAlignment="Top" Width="171" />
+                    <TextBlock Height="23" HorizontalAlignment="Left" Margin="84,40,0,0" x:Name="textBlock2" Text="Password:" VerticalAlignment="Top" Width="101" TextAlignment="Right" />
+                    <TextBlock Height="23" HorizontalAlignment="Left" Margin="84,69,0,0" x:Name="textBlock3" Text="Confirm Password:" VerticalAlignment="Top" Width="101" FlowDirection="LeftToRight" TextAlignment="Right" />
+                    <PasswordBox Height="23" HorizontalAlignment="Right" Margin="0,69,6,0" x:Name="passwordBoxCW3PasswordConfirm" VerticalAlignment="Top" Width="171" />
+                    <Button Content="Done" Height="23" Margin="0,0,6,6" x:Name="buttonCW3Done" VerticalAlignment="Bottom" Click="buttonCW3Done_Click" HorizontalAlignment="Right" Width="75" />
+                    <Button Content="Back" Height="23" HorizontalAlignment="Right" Margin="0,0,87,6" x:Name="buttonCW3Back" VerticalAlignment="Bottom" Width="75" Click="buttonCW3Back_Click" />
+                    <TextBlock FlowDirection="LeftToRight" Height="23" HorizontalAlignment="Left" Margin="6,117,0,0" x:Name="textBlock4" Text="Name of Wallet:" TextAlignment="Right" VerticalAlignment="Top" Width="179" />
+                    <TextBox Height="23" HorizontalAlignment="Left" Margin="191,117,0,0" x:Name="textBoxCW3Name" VerticalAlignment="Top" Width="171" />
+                    <Image Height="72" HorizontalAlignment="Left" Margin="6,40" x:Name="image3" Source="pack://siteoforigin:,,,/Resources/shield_72.png" Stretch="Fill" VerticalAlignment="Top" Width="72" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="RW1" HorizontalAlignment="Left" x:Name="tabItemRW1" VerticalAlignment="Top" Visibility="Collapsed">
+                <Grid>
+                    <Image Height="72" HorizontalAlignment="Left" Margin="6,40,0,0" x:Name="imageRW1" Source="pack://siteoforigin:,,,/Resources/seed.png" Stretch="Fill" VerticalAlignment="Top" Width="72" />
+                    <TextBox Height="72" HorizontalAlignment="Left" IsReadOnly="False" Margin="84,40,0,0" x:Name="textBoxRW1Seed" TextWrapping="Wrap" VerticalAlignment="Top" Width="278" IsEnabled="True" />
+                    <Label Content="Restore your Wallet" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" x:Name="labelRW1" VerticalAlignment="Top" Width="356" />
+                    <TextBlock FontStretch="Normal" Height="59" HorizontalAlignment="Left" Margin="6,123,0,0" x:Name="textBlockRW1" Text="Note: The seed tied to your wallet is a way how to restore the addresses in the &quot;Normal&quot; tab. All words matter and you must enter them in the correct order." TextWrapping="Wrap" VerticalAlignment="Top" Width="356" />
+                    <Button Content="Next" Height="23" HorizontalAlignment="Right" Margin="0,0,6,6" x:Name="buttonRW1Next" VerticalAlignment="Bottom" Width="75" Click="buttonRW1Next_Click"/>
+                    <Button Content="Back" Height="23" HorizontalAlignment="Right" Margin="0,0,87,6" x:Name="buttonRW1Back" VerticalAlignment="Bottom" Width="75" Click="buttonCW1Back_Click" />
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
