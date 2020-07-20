@@ -111,6 +111,40 @@ namespace AnoBIT_Wallet.Blocks {
             }
         }
 
+        public static int GetMinSize(byte[] transaction) {
+            switch (GetTransactionType(transaction)) {
+                case SendTransaction.SendTransactionType:
+                    return SendTransaction.SendTransactionMinSize;
+                case SendTransaction.SendTransactionTypeMessage:
+                    return SendTransaction.SendTransactionMessageMinSize;
+                case ReceiveTransaction.ReceiveTransactionType:
+                    return ReceiveTransaction.ReceiveTransactionMinSize;
+                case RootTransaction.RootTransactionType:
+                    return RootTransaction.RootTransactionMinSize;
+                case ChangeTransaction.ChangeTransactionType:
+                    return ChangeTransaction.ChangeTransactionMinSize;
+                default:
+                    return 0;
+            }
+        }
+
+        public static int GetMaxSize(byte[] transaction) {
+            switch (GetTransactionType(transaction)) {
+                case SendTransaction.SendTransactionType:
+                    return SendTransaction.SendTransactionMaxSize;
+                case SendTransaction.SendTransactionTypeMessage:
+                    return SendTransaction.SendTransactionMessageMaxSize;
+                case ReceiveTransaction.ReceiveTransactionType:
+                    return ReceiveTransaction.ReceiveTransactionMaxSize;
+                case RootTransaction.RootTransactionType:
+                    return RootTransaction.RootTransactionMaxSize;
+                case ChangeTransaction.ChangeTransactionType:
+                    return ChangeTransaction.ChangeTransactionMaxSize;
+                default:
+                    return 0;
+            }
+        }
+
         public static byte GetTransactionType(byte[] transaction) {
             if (transaction.Length > 5) {
                 return transaction[4];
@@ -151,6 +185,89 @@ namespace AnoBIT_Wallet.Blocks {
                 }
             }
             return null;
+        }
+
+        public static Account TransactionsToAccount(byte[][] transactions, bool fromSecureSource) {
+            RootTransaction rootTransaction = null;
+            for (int i = 0; i < transactions.Length; i++) {
+                byte[] tx = transactions[i];
+                if (GetTransactionType(tx) == RootTransaction.RootTransactionType) {
+                    rootTransaction = new RootTransaction(tx);
+                }
+            }
+
+            if (rootTransaction == null) {
+                string txOwnerAddress = "unknown";
+                try {
+                    txOwnerAddress = AnoBITCrypto.RIPEMD160ToAddress(AnoBITCrypto.PublicKeyToRIPEMD160(GetTransactionPublicKey(transactions[0])));
+                } catch {
+                    if (fromSecureSource) {
+                        throw new Exception(string.Format("TransactionsToAccount: Invalid owner of transaction, this absolutely shouldn't happen, especially as it is an input from database, specified as {0}.", GetTransactionPublicKey(transactions[0])));
+                    }
+                    throw new Exception(string.Format("TransactionsToAccount: Invalid owner of transaction, specified as {0}.", GetTransactionPublicKey(transactions[0])));
+                }
+                throw new Exception(string.Format("Open transaction for {0} couldn't be found.", txOwnerAddress));
+            }
+
+            Account account = new Account(rootTransaction);
+
+        }
+
+        public static List<byte[]> SortTransactions(List<byte[]> transactions, bool fromSecureSource) {
+            byte[] hashGenesisBlock = GenesisBlock.GetHash();
+            byte[] lastHash = hashGenesisBlock;
+            List<byte[]> output = new List<byte[]>();
+
+            RootTransaction rootTransaction = null;
+            for (int i = 0; i < transactions.Count; i++) {
+                byte[] tx = transactions[i];
+                if (GetTransactionType(tx) == RootTransaction.RootTransactionType) {
+                    byte[] pHash = GetTransactionPreviousHash(tx);
+                    if (pHash.SequenceEqual(lastHash)) {
+                        output.Add(tx);
+                        transactions.RemoveAt(i);
+                        rootTransaction = new RootTransaction(tx);
+                        lastHash = rootTransaction.GetHash();
+                    }
+                }
+            }
+
+            if (rootTransaction == null) {
+                string txOwnerAddress = "unknown";
+                try {
+                    txOwnerAddress = AnoBITCrypto.RIPEMD160ToAddress(AnoBITCrypto.PublicKeyToRIPEMD160(GetTransactionPublicKey(transactions[0])));
+                } catch {
+                    if (fromSecureSource) {
+                        throw new Exception(string.Format("TransactionsToAccount: Invalid owner of transaction, this absolutely shouldn't happen, especially as it is an input from database, specified as {0}.", GetTransactionPublicKey(transactions[0])));
+                    }
+                    throw new Exception(string.Format("TransactionsToAccount: Invalid owner of transaction, specified as {0}.", GetTransactionPublicKey(transactions[0])));
+                }
+                throw new Exception(string.Format("Open transaction for {0} couldn't be found.", txOwnerAddress));
+            }
+
+      
+            for (int i = 0; i < transactions.Count; i++) {
+                byte[] tx = transactions[i];
+                byte[] pHash = GetTransactionPreviousHash(tx);
+                if (pHash.SequenceEqual(lastHash)) {
+                    output.Add(tx);
+                    transactions.RemoveAt(i);
+                }
+            }
+
+            /*
+            if (transactions.Count != 0) {
+                string txOwnerAddress = "unknown";
+                try {
+                    txOwnerAddress = AnoBITCrypto.RIPEMD160ToAddress(AnoBITCrypto.PublicKeyToRIPEMD160(GetTransactionPublicKey(transactions[0])));
+                } catch {
+                    if (fromSecureSource) {
+                        throw new Exception(string.Format("SortTransactions: The blockchain for this account is malfuctioned, and this is a big problem as it comes out of secure source (database), specified as {0}.", GetTransactionPublicKey(transactions[0])));
+                    }
+                    throw new Exception(string.Format("SortTransactions: The blockchain for this account is malfuctioned, specified as {0}.", GetTransactionPublicKey(transactions[0])));
+                }
+                throw new Exception(string.Format("SortTransactions: transactions for {0} are corrupted.", txOwnerAddress));
+            }*/
         }
 
         public static int CalculateNonce(byte difficulty, byte[] transaction, byte[] privateKey) {

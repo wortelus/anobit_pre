@@ -19,6 +19,13 @@ namespace AnoBIT_Wallet {
             DbConnection.Open();
         }
 
+        ~BlockchainHandler() {
+            try {
+                DbConnection.Close();
+                DbConnection.Dispose();
+            } catch { }
+        }
+
         public bool InsertTransaction(byte[] transaction) {
             if (transaction == null) {
                 throw new ArgumentNullException("Null transaction provided for insert.");
@@ -34,21 +41,24 @@ namespace AnoBIT_Wallet {
             string createSql = string.Format(AccountCreateQuery, senderHash);
             SQLiteCommand command = new SQLiteCommand(createSql, DbConnection);
             command.ExecuteNonQuery();
+            return false;
         }
 
-
-
-
-        private string PrepareInsertStatement(string databaseName, DbTxEntry dbTxEntry) {
-            using (var command = new SQLiteCommand("INSERT INTO @table (hash, prehash, owner, type, amount, target, payload) VALUES (@hash, @prevhash, @owner, @type, @amount, @target, @payload)", DbConnection)) {
-                command.Parameters.Add("@hash", DbType.Binary, dbTxEntry.Hash.Length).Value = dbTxEntry.Hash;
-                command.Parameters.Add("@prehash", DbType.Binary, dbTxEntry.PreviousHash.Length).Value = dbTxEntry.PreviousHash;
-                command.Parameters.Add("@owner", DbType.Binary, dbTxEntry.SenderPublicKey.Length).Value = dbTxEntry.SenderPublicKey;
-                command.Parameters.Add("@type", DbType.Binary, 1).Value = dbTxEntry.Type; //TODO
-                command.Parameters.Add("@amount", DbType.Binary, 8).Value = dbTxEntry.Amount;
-                command.Parameters.Add("@target", DbType.Binary, dbTxEntry.Target.Length).Value = dbTxEntry.Target;
-                command.Parameters.Add("@payload", DbType.Binary, dbTxEntry.Payload.Length).Value = dbTxEntry.Payload;
-                command.ExecuteNonQuery();
+        private bool PrepareInsertStatement(string databaseName, DbTxEntry dbTxEntry) {
+            try {
+                using (var command = new SQLiteCommand("INSERT INTO " + databaseName + " (hash, prehash, owner, type, amount, target, payload) VALUES (@hash, @prevhash, @owner, @type, @amount, @target, @payload)", DbConnection)) {
+                    command.Parameters.Add("@hash", DbType.Binary, dbTxEntry.Hash.Length).Value = dbTxEntry.Hash;
+                    command.Parameters.Add("@prehash", DbType.Binary, dbTxEntry.PreviousHash.Length).Value = dbTxEntry.PreviousHash;
+                    command.Parameters.Add("@owner", DbType.Binary, dbTxEntry.SenderPublicKey.Length).Value = dbTxEntry.SenderPublicKey;
+                    command.Parameters.Add("@type", DbType.Binary, 1).Value = dbTxEntry.Type; //TODO
+                    command.Parameters.Add("@amount", DbType.Binary, 8).Value = dbTxEntry.Amount;
+                    command.Parameters.Add("@target", DbType.Binary, dbTxEntry.Target.Length).Value = dbTxEntry.Target;
+                    command.Parameters.Add("@payload", DbType.Binary, dbTxEntry.Payload.Length).Value = dbTxEntry.Payload;
+                    command.ExecuteNonQuery();
+                    return true;
+                }
+            } catch {
+                return false;
             }
         }
 
@@ -120,7 +130,7 @@ namespace AnoBIT_Wallet {
                     if (value[30] != 48) {
                         throw new AnoBITCryptoException("Signature for transaction doesn't start with 48.");
                     }
-                    if (value.Length > MaxSignatureSize) {
+                    if (value.Length > Transaction.MaxSignatureSize) {
                         throw new AnoBITCryptoException("Signature for transaction is too long.");
                     }
                     signature = value;

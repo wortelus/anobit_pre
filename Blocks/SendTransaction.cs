@@ -13,6 +13,12 @@ namespace AnoBIT_Wallet.Blocks {
         public const byte SendTransactionDifficulty = 18;
         public const byte SendTransactionMessageDifficulty = 20;
 
+        public const int SendTransactionMinSize = 132 + 1;
+        public const int SendTransactionMessageMinSize = 164 + 1;
+
+        public const int SendTransactionMaxSize = 132 + MaxSignatureSize;
+        public const int SendTransactionMessageMaxSize = 164 + MaxSignatureSize;
+
         public override byte Difficulty {
             get {
                 if (TxType == SendTransactionType) {
@@ -51,25 +57,25 @@ namespace AnoBIT_Wallet.Blocks {
             if (transaction.Length < 133) {
                 throw new Exception("Send transaction is not valid. Too short.");
             }
-            TxType = GetTransactionType(transaction);
+            TxType = GetTransactionType(transaction); //1 byte
 
-            if (transaction.Length > 144 && TxType == SendTransactionTypeMessage) {
-                RAP = GetTransactionRAP(transaction);
-                Nonce = GetTransactionNonce(transaction);
-                PreviousHash = GetTransactionPublicKey(transaction);
-                SenderPublicKey = GetTransactionPublicKey(transaction);
-                Receiver = transaction.Skip(104).Take(20).ToArray();
-                Amount = BitConverter.ToUInt64(transaction.Skip(104).Take(8).ToArray(), 0);
-                Message = transaction.Skip(112).Take(32).ToArray();
-                Signature = transaction.Skip(144).Take(transaction.Length - 144).ToArray();
+            if (transaction.Length > 164 && TxType == SendTransactionTypeMessage) {
+                RAP = GetTransactionRAP(transaction); //2 bytes
+                Nonce = GetTransactionNonce(transaction); //4 bytes
+                PreviousHash = GetTransactionPublicKey(transaction); //32 bytes
+                SenderPublicKey = GetTransactionPublicKey(transaction); //65 bytes
+                Receiver = transaction.Skip(104).Take(20).ToArray(); //20 bytes
+                Amount = BitConverter.ToUInt64(transaction.Skip(124).Take(8).ToArray(), 0); //8 bytes
+                Message = transaction.Skip(132).Take(32).ToArray(); //32 bytes
+                Signature = transaction.Skip(164).Take(transaction.Length - 164).ToArray(); 
             } else {
-                RAP = GetTransactionRAP(transaction);
-                Nonce = GetTransactionNonce(transaction);
-                PreviousHash = GetTransactionPublicKey(transaction);
-                SenderPublicKey = GetTransactionPublicKey(transaction);
-                Receiver = transaction.Skip(104).Take(20).ToArray();
-                Amount = BitConverter.ToUInt64(transaction.Skip(124).Take(8).ToArray(), 0);
-                Signature = transaction.Skip(132).Take(transaction.Length - 132).ToArray();
+                RAP = GetTransactionRAP(transaction); //2 bytes
+                Nonce = GetTransactionNonce(transaction); //4 bytes
+                PreviousHash = GetTransactionPublicKey(transaction); //32 bytes
+                SenderPublicKey = GetTransactionPublicKey(transaction); //65 bytes
+                Receiver = transaction.Skip(104).Take(20).ToArray(); //20 bytes
+                Amount = BitConverter.ToUInt64(transaction.Skip(124).Take(8).ToArray(), 0); //8 bytes
+                Signature = transaction.Skip(132).Take(transaction.Length - 132).ToArray(); 
             }
             throw new Exception("Send transaction is not valid.");
         }

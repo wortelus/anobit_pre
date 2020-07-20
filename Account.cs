@@ -46,6 +46,7 @@ namespace AnoBIT_Wallet {
 
             try {
                 bool precheck = TransactionPrecheck(transaction);
+                bool maincheck = false;
 
                 if (precheck == false) {
                     return false;
@@ -54,7 +55,7 @@ namespace AnoBIT_Wallet {
                 if (type == SendTransaction.SendTransactionType || type == SendTransaction.SendTransactionTypeMessage) {
                     try {
                         SendTransaction sendTransaction = new SendTransaction(transaction);
-                        bool sendPrecheck = SendTransactionPrecheck(sendTransaction);
+                        maincheck = SendTransactionPrecheck(sendTransaction);
 
                     } catch (OverflowException) {
                         throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
@@ -68,6 +69,7 @@ namespace AnoBIT_Wallet {
                         throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
                     }
                 }
+                return (maincheck == precheck && precheck == true);
             } catch (Exception ex) {
                 throw new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
             }

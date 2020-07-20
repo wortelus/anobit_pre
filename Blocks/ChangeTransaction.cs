@@ -12,6 +12,9 @@ namespace AnoBIT_Wallet.Blocks {
         public const byte ChangeTransactionDifficulty = 16;
         public override byte Difficulty => ChangeTransactionDifficulty;
 
+        public const int ChangeTransactionMinSize = 124 + 1;
+        public const int ChangeTransactionMaxSize = 124 + MaxSignatureSize;
+
         private byte[] representative;
         public byte[] Representative {
             get {

@@ -11,6 +11,9 @@ namespace AnoBIT_Wallet.Blocks {
         public const byte RootTransactionDifficulty = 20;
         public override byte Difficulty => RootTransactionDifficulty;
 
+        public const int RootTransactionMinSize = 124 + 1;
+        public const int RootTransactionMaxSize = 124 + MaxSignatureSize;
+
         private byte[] representative;
         public byte[] Representative {
             get {
@@ -37,16 +40,16 @@ namespace AnoBIT_Wallet.Blocks {
                 throw new Exception("Root transaction is not valid. Too short.");
             }
 
-            TxType = GetTransactionType(transaction);
+            TxType = GetTransactionType(transaction); //1 byte
             if (transaction.Length > 144 && TxType == RootTransactionType) {
-                RAP = GetTransactionRAP(transaction);
-                Nonce = GetTransactionNonce(transaction);
-                PreviousHash = GetTransactionPublicKey(transaction);
-                SenderPublicKey = GetTransactionPublicKey(transaction);
-                Representative = transaction.Skip(104).Take(20).ToArray();
+                RAP = GetTransactionRAP(transaction); //2 bytes
+                Nonce = GetTransactionNonce(transaction); //4 bytes
+                PreviousHash = GetTransactionPublicKey(transaction); //32 bytes            
+                SenderPublicKey = GetTransactionPublicKey(transaction); //65 bytes
+                Representative = transaction.Skip(104).Take(20).ToArray(); //20 bytes
                 Signature = transaction.Skip(124).Take(transaction.Length - 124).ToArray();
             }
-            throw new Exception("Receive transaction is not valid.");
+            throw new Exception("Root transaction is not valid.");
         }
 
         public override bool HasValidNonce() {
