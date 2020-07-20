@@ -54,12 +54,15 @@ namespace AnoBIT_Wallet.Blocks {
         }
 
         public SendTransaction(byte[] transaction) {
-            if (transaction.Length < 133) {
-                throw new Exception("Send transaction is not valid. Too short.");
-            }
             TxType = GetTransactionType(transaction); //1 byte
 
-            if (transaction.Length > 164 && TxType == SendTransactionTypeMessage) {
+            if (TxType == SendTransactionType && (transaction.Length < SendTransactionMinSize || transaction.Length > SendTransactionMaxSize)) {
+                throw new Exception("Send transaction is not within the accepted bounds.");
+            } else if (TxType == SendTransactionTypeMessage && (transaction.Length < SendTransactionMessageMinSize || transaction.Length > SendTransactionMessageMaxSize)) {
+                throw new Exception("Send transaction with message is not within the accepted bounds.");
+            }
+
+            if (TxType == SendTransactionTypeMessage) {
                 RAP = GetTransactionRAP(transaction); //2 bytes
                 Nonce = GetTransactionNonce(transaction); //4 bytes
                 PreviousHash = GetTransactionPublicKey(transaction); //32 bytes
@@ -68,7 +71,7 @@ namespace AnoBIT_Wallet.Blocks {
                 Amount = BitConverter.ToUInt64(transaction.Skip(124).Take(8).ToArray(), 0); //8 bytes
                 Message = transaction.Skip(132).Take(32).ToArray(); //32 bytes
                 Signature = transaction.Skip(164).Take(transaction.Length - 164).ToArray(); 
-            } else {
+            } else if (TxType == SendTransactionType) {
                 RAP = GetTransactionRAP(transaction); //2 bytes
                 Nonce = GetTransactionNonce(transaction); //4 bytes
                 PreviousHash = GetTransactionPublicKey(transaction); //32 bytes

@@ -40,12 +40,13 @@ namespace AnoBIT_Wallet.Blocks {
         }
 
         public ReceiveTransaction(byte[] transaction) {
-            if (transaction.Length < 145) {
-                throw new Exception("Receive transaction is not valid. Too short.");
+            TxType = GetTransactionType(transaction);
+
+            if (TxType == ReceiveTransactionType && (transaction.Length < ReceiveTransactionMinSize || transaction.Length > ReceiveTransactionMaxSize)) {
+                throw new Exception("Receive transaction is not within the accepted bounds.");
             }
 
-            TxType = GetTransactionType(transaction);
-            if (transaction.Length > 144 && TxType == ReceiveTransactionType) {
+            if (TxType == ReceiveTransactionType) {
                 RAP = GetTransactionRAP(transaction);
                 Nonce = GetTransactionNonce(transaction);
                 PreviousHash = GetTransactionPublicKey(transaction);

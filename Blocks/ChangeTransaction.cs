@@ -36,11 +36,13 @@ namespace AnoBIT_Wallet.Blocks {
         }
 
         public ChangeTransaction(byte[] transaction) {
-            if (transaction.Length < 125) {
-                throw new Exception("Change transaction is not valid. Too short.");
-            }
             TxType = GetTransactionType(transaction);
-            if (transaction.Length > 144 && TxType == ChangeTransactionType) {
+
+            if (TxType == ChangeTransactionType && (transaction.Length < ChangeTransactionMinSize || transaction.Length > ChangeTransactionMaxSize)) {
+                throw new Exception("Root transaction is not within the accepted bounds.");
+            }
+
+            if (TxType == ChangeTransactionType) {
                 RAP = GetTransactionRAP(transaction);
                 Nonce = GetTransactionNonce(transaction);
                 PreviousHash = GetTransactionPublicKey(transaction);
