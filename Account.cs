@@ -6,14 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnoBIT_Wallet {
-    class Account {
+    public class Account {
         public byte[] RIPEMD160 { get; set; }
+        public byte[] Representative { get; set; }
 
         RootTransaction RootTransaction;
         List<byte[]> Blocks = new List<byte[]>();
         List<SendTransaction> TxOutputs = new List<SendTransaction>();
 
-        private object OpLock = new object();
+        private readonly object OpLock = new object();
 
         public Account(byte[] ripemd160) {
             RIPEMD160 = ripemd160;
@@ -21,6 +22,13 @@ namespace AnoBIT_Wallet {
 
         public Account(RootTransaction rootTransaction) {
             RootTransaction = rootTransaction;
+        }
+
+        public Account(List<byte[]> transactions) {
+            RootTransaction = new RootTransaction(transactions[0]);
+            for (int i = 1; i < transactions.Count; i++) {
+                InsertTransaction(transactions[i]);
+            }
         }
 
         public byte[] GetPublicKey() {
@@ -61,15 +69,19 @@ namespace AnoBIT_Wallet {
                         throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
                     }
                 } else if (type == ReceiveTransaction.ReceiveTransactionType) {
-                    ReceiveTransaction sendTransaction = new ReceiveTransaction(transaction);
                     try {
-
+                        ReceiveTransaction receiveTransaction = new ReceiveTransaction(transaction);
+                        maincheck = ReceiveTransactionPrecheck(receiveTransaction);
 
                     } catch (OverflowException) {
                         throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
                     }
+                } else if (type == ChangeTransaction.ChangeTransactionType) {
+                    ChangeTransaction changeTransaction = new ChangeTransaction(transaction);
+                    Representative = changeTransaction.Representative;
                 }
-                return (maincheck == precheck && precheck == true);
+
+                return maincheck && precheck;
             } catch (Exception ex) {
                 throw new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
             }

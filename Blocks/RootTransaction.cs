@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnoBIT_Wallet.Blocks {
-    internal class RootTransaction : Transaction {
+    public class RootTransaction : Transaction {
         public const byte RootTransactionType = 1;
         public const byte RootTransactionDifficulty = 20;
         public override byte Difficulty => RootTransactionDifficulty;

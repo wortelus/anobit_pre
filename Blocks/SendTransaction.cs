@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnoBIT_Wallet.Blocks {
-    internal class SendTransaction : Transaction {
+    public class SendTransaction : Transaction {
         public const byte SendTransactionType = 10;
         public const byte SendTransactionTypeMessage = 11;
 

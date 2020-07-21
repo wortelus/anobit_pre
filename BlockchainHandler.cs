@@ -50,8 +50,8 @@ namespace AnoBIT_Wallet {
                     command.Parameters.Add("@hash", DbType.Binary, dbTxEntry.Hash.Length).Value = dbTxEntry.Hash;
                     command.Parameters.Add("@prehash", DbType.Binary, dbTxEntry.PreviousHash.Length).Value = dbTxEntry.PreviousHash;
                     command.Parameters.Add("@owner", DbType.Binary, dbTxEntry.SenderPublicKey.Length).Value = dbTxEntry.SenderPublicKey;
-                    command.Parameters.Add("@type", DbType.Binary, 1).Value = dbTxEntry.Type; //TODO
-                    command.Parameters.Add("@amount", DbType.Binary, 8).Value = dbTxEntry.Amount;
+                    command.Parameters.Add("@type", DbType.Byte).Value = dbTxEntry.Type; //TODO
+                    command.Parameters.Add("@amount", DbType.UInt64).Value = dbTxEntry.Amount;
                     command.Parameters.Add("@target", DbType.Binary, dbTxEntry.Target.Length).Value = dbTxEntry.Target;
                     command.Parameters.Add("@payload", DbType.Binary, dbTxEntry.Payload.Length).Value = dbTxEntry.Payload;
                     command.ExecuteNonQuery();

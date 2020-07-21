@@ -263,10 +263,13 @@ namespace AnoBIT_Wallet
 
         private void menuItemEditAddress_Click(object sender, RoutedEventArgs e) {
             //MessageBox.Show(listViewNormalAddresses.SelectedItem.ToString());
+            if (listViewNormalAddresses.SelectedIndex == -1) {
+                return;
+            }
             int selectedIndex = listViewNormalAddresses.SelectedIndex;
             WindowAddLabel windowAddLabel = new WindowAddLabel(
-                (string)listViewNormalAddresses.SelectedItem.GetType().GetProperty("Address").GetValue(listViewNormalAddresses.SelectedItem),
-                (string)listViewNormalAddresses.SelectedItem.GetType().GetProperty("Note").GetValue(listViewNormalAddresses.SelectedItem));
+                (string)listViewNormalAddresses.SelectedItem.GetType().GetProperty("Base58Address").GetValue(listViewNormalAddresses.SelectedItem),
+                (string)listViewNormalAddresses.SelectedItem.GetType().GetProperty("Desc").GetValue(listViewNormalAddresses.SelectedItem));
             if (windowAddLabel.ShowDialog() == true) {
                 WalletObject.Addresses[selectedIndex].Desc = windowAddLabel.Note;
                 SetNormalAddresses();
@@ -284,6 +287,9 @@ namespace AnoBIT_Wallet
         }
 
         private void menuItemShowAddressProperties_Click(object sender, RoutedEventArgs e) {
+            if (listViewNormalAddresses.SelectedIndex == -1) {
+                return;
+            }
             WindowShowPrivateKey windowShowPrivateKey = new WindowShowPrivateKey(WalletObject.Addresses[listViewNormalAddresses.SelectedIndex]);
             windowShowPrivateKey.ShowDialog();
         }
