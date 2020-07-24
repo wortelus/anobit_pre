@@ -6,6 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnoBIT_Wallet {
+    /// <summary>
+    /// This is the object for BlockchainHandler class consisting of Accounts.
+    /// Account gets loaded from database, and then the transactions are verified here in this object
+    /// while parameters from the database and the network are passed from the BlockchainHandler class.
+    /// If the InsetrTransaction goes true/positive, BlockchainHandler should update the Database.
+    /// BlockchainHandler should keep a track that the database and Account objects are consistent, although
+    /// not all must be loaded from the database to save RAM.
+    /// This class should also notify BlockchainHandler of a possible fork, which then passes the network request to vote
+    /// which one is the right one.
+    /// </summary>
     public class Account {
         public byte[] RIPEMD160 { get; set; }
         public byte[] Representative { get; set; }
