@@ -204,6 +204,18 @@ namespace AnoBIT_Wallet.Blocks {
             return null;
         }
 
+        public static List<byte[]> GetHashList(List<byte[]> transactions, bool sort, bool fromSecureSource) {
+            if (sort) {
+                transactions = SortTransactions(transactions, fromSecureSource);
+            }
+            List<byte[]> output = new List<byte[]>();
+                for (int i = 0; i < transactions.Count; i++) {
+                    output.Add(TxHashFunction(output[i]));
+                }
+            
+            return output;
+        }
+
         public static Account TransactionsToAccount(List<byte[]> transactions, bool fromSecureSource) {
             List<byte[]> sortedTxs = SortTransactions(transactions, fromSecureSource);
             Account account = new Account(sortedTxs);

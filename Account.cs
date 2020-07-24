@@ -80,11 +80,21 @@ namespace AnoBIT_Wallet {
                     ChangeTransaction changeTransaction = new ChangeTransaction(transaction);
                     Representative = changeTransaction.Representative;
                 }
-
                 return maincheck && precheck;
             } catch (Exception ex) {
                 throw new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
             }
+        }
+
+        public List<byte[]> GetHashList() {
+            List<byte[]> output = new List<byte[]>();
+            if (RootTransaction != null) {
+                output.Add(RootTransaction.GetHash());
+                for (int i = 0; i < Blocks.Count; i++) {
+                    output.Add(Transaction.TxHashFunction(output[i]));
+                }
+            } 
+            return output;
         }
 
         public bool SendTransactionPrecheck(SendTransaction sendTransaction) {

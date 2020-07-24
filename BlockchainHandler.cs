@@ -11,10 +11,10 @@ namespace AnoBIT_Wallet {
     class BlockchainHandler {
         SQLiteConnection DbConnection;
 
-        private const string AccountCreateQuery = "CREATE TABLE IF NOT EXISTS {0} (hash BLOB PRIMARY KEY, prehash BLOB NOT NULL UNIQUE, type INTEGER NOT NULL, owner BLOB NOT NULL, amount INTEGER, target BLOB, payload BLOB);";
+        private const string AccountCreateQuery = "CREATE TABLE IF NOT EXISTS {0} (hash BLOB PRIMARY KEY, prehash BLOB NOT NULL UNIQUE, type INTEGER NOT NULL, owner BLOB NOT NULL, ownerhash BLOB NOT NULL, amount INTEGER, target BLOB, payload BLOB);";
         private string DatabaseName = "tx";
 
-        Dictionary<string, Account> tempBlockchain = new Dictionary<string, Account>();
+        Dictionary<byte[], Account> tempBlockchain = new Dictionary<byte[], Account>();
 
         public BlockchainHandler(string name) {
             DbConnection = new SQLiteConnection("Data Source=" + name + ";Version=3;");
@@ -47,12 +47,93 @@ namespace AnoBIT_Wallet {
             return false;
         }
 
+        private bool ToAccountDictionary(byte[] transaction) {
+            //tempBlockchain.
+            return false;
+        }
+
+        private void LoadFromDbByOwner(byte[] publicKey) {
+            byte[] ripemd = AnoBITCrypto.PublicKeyToRIPEMD160(publicKey);
+            List<byte[]> payload = new List<byte[]>();
+
+            using (var command = new SQLiteCommand("SELECT payload FROM + " + DatabaseName + " WHERE owner = @owner", DbConnection)) {
+                command.Parameters.Add("@owner", DbType.Binary, publicKey.Length).Value = publicKey;
+                var reader = command.ExecuteReader();
+                int i = 0;
+                while (reader.Read()) {
+                    payload.Add((byte[])reader["payload"]);
+                    i++;
+                }
+                if (i == 0) {
+                    //tempBlockchain.Add(ripemd, new Account(ripemd));
+                }
+            }
+
+            List<byte[]> sortedTx = Transaction.SortTransactions(payload, true);
+            if (tempBlockchain.ContainsKey(ripemd)) {
+                //there are tx's in db, and there are tx's in tempBlockchain. Let's do the magic
+                List<byte[]> hashListDictionary = tempBlockchain[ripemd].GetHashList(); //hashlist from dictionary
+                List<byte[]> hashListDb = Transaction.GetHashList(sortedTx, false, true); //hashlist from Db
+                int comparedChains = ExtensionsTx.CompareSeparateBlockchains(hashListDictionary, hashListDb);
+
+                if (comparedChains < 0) {
+                    //if tempBlockchain is shorter, needs to be filled up from database
+                    for (int i = sortedTx.Count + comparedChains; i < sortedTx.Count; i++) {
+                        if (!tempBlockchain[ripemd].InsertTransaction(sortedTx[i], GetTargetTransaction(sortedTx[i]))) {
+                            //transaction from db is not accepted
+                            //TODO: handling
+
+                            /* DEV NOTES:
+                             * if we got here, the db is same as the tempBlockchain, but tempBlockchain is shorter and won't accept 
+                             * blocks from db, which is weird
+                             * 
+                             * possible causes:
+                             * the database couldn't be outdated, as is contains more information
+                             * the only reasonable cause of this could be invalid Db entry
+                             * 
+                             * possible missing target transaction, request
+                             */
+                        }
+                    }
+                    return;
+                } else if (comparedChains > 0) {
+                    //if database is shorter than the tempBlockchain, this shouldn't happen as 
+                    //the account class should take care of it and add to both or none in case of invalid block entry
+                    //in my opinion the proper handling would be to throw an exception and look for fix
+                    throw new Exception("Database is shorter than the tempBlockchain, this shouldn't happen.");
+                }
+                return;
+            } else {
+                //tempBlockchain is empty, load from database
+                tempBlockchain.Add(ripemd, new Account(ripemd));
+
+                for (int i = 0; i < sortedTx.Count; i++) {
+                    if (!tempBlockchain[ripemd].InsertTransaction(sortedTx[i], GetTargetTransaction(sortedTx[i]))) {
+                        //transaction from db is not accepted
+                        //TODO: handling
+
+                        /* DEV NOTES:
+                         * if we got here, the db is same as the tempBlockchain, but tempBlockchain is shorter and won't accept 
+                         * blocks from db, which is weird
+                         * 
+                         * possible causes:
+                         * the database couldn't be outdated, as is contains more information
+                         * the only reasonable cause of this could be invalid Db entry
+                         * 
+                         * possible missing target transaction, request from the network
+                         */
+                    }
+                }
+            }
+        }
+
         private bool PrepareInsertStatement(DbTxEntry dbTxEntry) {
             try {
-                using (var command = new SQLiteCommand("INSERT INTO " + DatabaseName + " (hash, prehash, owner, type, amount, target, payload) VALUES (@hash, @prevhash, @owner, @type, @amount, @target, @payload)", DbConnection)) {
+                using (var command = new SQLiteCommand("INSERT INTO " + DatabaseName + " (hash, prehash, owner, ownerhash, type, amount, target, payload) VALUES (@hash, @prevhash, @owner, @ownerhash, @type, @amount, @target, @payload)", DbConnection)) {
                     command.Parameters.Add("@hash", DbType.Binary, dbTxEntry.Hash.Length).Value = dbTxEntry.Hash;
                     command.Parameters.Add("@prehash", DbType.Binary, dbTxEntry.PreviousHash.Length).Value = dbTxEntry.PreviousHash;
                     command.Parameters.Add("@owner", DbType.Binary, dbTxEntry.SenderPublicKey.Length).Value = dbTxEntry.SenderPublicKey;
+                    command.Parameters.Add("@ownerhash", DbType.Binary, dbTxEntry.RIPEMD160.Length).Value = dbTxEntry.RIPEMD160;
                     command.Parameters.Add("@type", DbType.Byte).Value = dbTxEntry.Type; //TODO
                     command.Parameters.Add("@amount", DbType.UInt64).Value = dbTxEntry.Amount;
                     command.Parameters.Add("@target", DbType.Binary, dbTxEntry.Target.Length).Value = dbTxEntry.Target;
@@ -103,7 +184,7 @@ namespace AnoBIT_Wallet {
             }
             return true;
         }
-        
+
         public Account TransactionListToAccount(List<byte[]> transactions, bool fromSecureSource) {
             List<byte[]> sortedTxs = Transaction.SortTransactions(transactions, fromSecureSource);
             Account account = new Account(sortedTxs);
@@ -156,6 +237,12 @@ namespace AnoBIT_Wallet {
                         throw new AnoBITCryptoException("Sender public key for transaction doesn't start with '4' byte");
                     }
                     senderPublicKey = value;
+                }
+            }
+
+            public byte[] RIPEMD160 {
+                get {
+                    return AnoBITCrypto.PublicKeyToRIPEMD160(SenderPublicKey);
                 }
             }
 
