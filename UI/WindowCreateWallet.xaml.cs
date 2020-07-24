@@ -20,7 +20,6 @@ namespace AnoBIT_Wallet {
     /// Interaction logic for WindowCreateWallet.xaml
     /// </summary>
     public partial class WindowCreateWallet : Window {
-        int cointype = 23;
         SHA256Managed SHA256 = new SHA256Managed();
         IVersionPreprocessor preprocessor = SeedControl.VersionPreprocessor(1);
         private byte initialWordCount;

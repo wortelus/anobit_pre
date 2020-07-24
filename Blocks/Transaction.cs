@@ -128,6 +128,23 @@ namespace AnoBIT_Wallet.Blocks {
             }
         }
 
+        public static int GetMaxSize(byte type) {
+            switch (type) {
+                case SendTransaction.SendTransactionType:
+                    return SendTransaction.SendTransactionMaxSize;
+                case SendTransaction.SendTransactionTypeMessage:
+                    return SendTransaction.SendTransactionMessageMaxSize;
+                case ReceiveTransaction.ReceiveTransactionType:
+                    return ReceiveTransaction.ReceiveTransactionMaxSize;
+                case RootTransaction.RootTransactionType:
+                    return RootTransaction.RootTransactionMaxSize;
+                case ChangeTransaction.ChangeTransactionType:
+                    return ChangeTransaction.ChangeTransactionMaxSize;
+                default:
+                    return 0;
+            }
+        }
+
         public static int GetMaxSize(byte[] transaction) {
             switch (GetTransactionType(transaction)) {
                 case SendTransaction.SendTransactionType:

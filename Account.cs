@@ -12,7 +12,6 @@ namespace AnoBIT_Wallet {
 
         RootTransaction RootTransaction;
         List<byte[]> Blocks = new List<byte[]>();
-        List<SendTransaction> TxOutputs = new List<SendTransaction>();
 
         private readonly object OpLock = new object();
 
@@ -25,17 +24,18 @@ namespace AnoBIT_Wallet {
         }
 
         public Account(List<byte[]> transactions) {
-            RootTransaction = new RootTransaction(transactions[0]);
+            throw new NotImplementedException();
+            /*RootTransaction = new RootTransaction(transactions[0]);
             for (int i = 1; i < transactions.Count; i++) {
-                InsertTransaction(transactions[i]);
-            }
+                //InsertTransaction(transactions[i]);
+            }*/
         }
 
         public byte[] GetPublicKey() {
             return RootTransaction.SenderPublicKey;
         }
 
-        public bool MarkSpent(byte[] hash) {
+        /*public bool MarkSpent(byte[] hash) {
             for (int i = 0; i < TxOutputs.Count; i++) {
                 if (TxOutputs[i].GetHash().SequenceEqual(hash)) {
                     if (TxOutputs[i].SpentBy != null) {
@@ -47,9 +47,9 @@ namespace AnoBIT_Wallet {
                 }
             }
             return false;
-        }
+        }*/
 
-        public bool InsertTransaction(byte[] transaction) {
+        public bool InsertTransaction(byte[] transaction, byte[] targetTransaction) {
             byte type = Transaction.GetTransactionType(transaction);
 
             try {
@@ -71,8 +71,8 @@ namespace AnoBIT_Wallet {
                 } else if (type == ReceiveTransaction.ReceiveTransactionType) {
                     try {
                         ReceiveTransaction receiveTransaction = new ReceiveTransaction(transaction);
-                        maincheck = ReceiveTransactionPrecheck(receiveTransaction);
-
+                        SendTransaction sendTargetTransaction = new SendTransaction(targetTransaction);
+                        maincheck = ReceiveTransactionPrecheck(receiveTransaction, sendTargetTransaction);
                     } catch (OverflowException) {
                         throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
                     }
@@ -98,24 +98,16 @@ namespace AnoBIT_Wallet {
             return true;
         }
 
-        public bool ReceiveTransactionPrecheck(ReceiveTransaction receiveTransaction) {
+        public bool ReceiveTransactionPrecheck(ReceiveTransaction receiveTransaction, SendTransaction targetTransaction) {
             lock (OpLock) {
                 byte[] hash = receiveTransaction.GetHash();
-                for (int i = 0; i < TxOutputs.Count; i++) {
-                    if (TxOutputs[i].GetHash().SequenceEqual(hash)) {
-                        if (TxOutputs[i].SpentBy != null) {
-                            bool sendCheck = TxOutputs[i].VerifyWithReceiveTransaction(receiveTransaction);
-                            if (sendCheck) {
-                                TxOutputs[i].SpentBy = hash;
-                                return true;
-                            }
-                        } else {
-                            return false;
-                        }
-                    }
+                bool sendCheck = targetTransaction.VerifyWithReceiveTransaction(receiveTransaction);
+                if (sendCheck) {
+                    return true;
+                } else {
+                    return false;
                 }
             }
-            return true;
         }
 
         public bool TransactionPrecheck(byte[] transaction) {
@@ -146,6 +138,10 @@ namespace AnoBIT_Wallet {
 
         public byte[] GetLastPreviousHash() {
             lock (OpLock) {
+                if (Blocks.Count == 0) {
+                    return GenesisBlock.GetHash();
+                }
+
                 return Transaction.GetTransactionPreviousHash(Blocks[Blocks.Count - 1]);
             }
         }

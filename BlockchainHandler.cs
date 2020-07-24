@@ -12,6 +12,9 @@ namespace AnoBIT_Wallet {
         SQLiteConnection DbConnection;
 
         private const string AccountCreateQuery = "CREATE TABLE IF NOT EXISTS {0} (hash BLOB PRIMARY KEY, prehash BLOB NOT NULL UNIQUE, type INTEGER NOT NULL, owner BLOB NOT NULL, amount INTEGER, target BLOB, payload BLOB);";
+        private string DatabaseName = "tx";
+
+        Dictionary<string, Account> tempBlockchain = new Dictionary<string, Account>();
 
         public BlockchainHandler(string name) {
             DbConnection = new SQLiteConnection("Data Source=" + name + ";Version=3;");
@@ -44,9 +47,9 @@ namespace AnoBIT_Wallet {
             return false;
         }
 
-        private bool PrepareInsertStatement(string databaseName, DbTxEntry dbTxEntry) {
+        private bool PrepareInsertStatement(DbTxEntry dbTxEntry) {
             try {
-                using (var command = new SQLiteCommand("INSERT INTO " + databaseName + " (hash, prehash, owner, type, amount, target, payload) VALUES (@hash, @prevhash, @owner, @type, @amount, @target, @payload)", DbConnection)) {
+                using (var command = new SQLiteCommand("INSERT INTO " + DatabaseName + " (hash, prehash, owner, type, amount, target, payload) VALUES (@hash, @prevhash, @owner, @type, @amount, @target, @payload)", DbConnection)) {
                     command.Parameters.Add("@hash", DbType.Binary, dbTxEntry.Hash.Length).Value = dbTxEntry.Hash;
                     command.Parameters.Add("@prehash", DbType.Binary, dbTxEntry.PreviousHash.Length).Value = dbTxEntry.PreviousHash;
                     command.Parameters.Add("@owner", DbType.Binary, dbTxEntry.SenderPublicKey.Length).Value = dbTxEntry.SenderPublicKey;
@@ -54,12 +57,62 @@ namespace AnoBIT_Wallet {
                     command.Parameters.Add("@amount", DbType.UInt64).Value = dbTxEntry.Amount;
                     command.Parameters.Add("@target", DbType.Binary, dbTxEntry.Target.Length).Value = dbTxEntry.Target;
                     command.Parameters.Add("@payload", DbType.Binary, dbTxEntry.Payload.Length).Value = dbTxEntry.Payload;
-                    command.ExecuteNonQuery();
+                    int l = command.ExecuteNonQuery();
+                    if (l != 1) {
+                        return false;
+                    }
                     return true;
                 }
             } catch {
                 return false;
             }
+        }
+
+        public byte[] GetTargetTransaction(byte[] transaction) {
+            if (Transaction.GetTransactionType(transaction) == ReceiveTransaction.ReceiveTransactionType) {
+                ReceiveTransaction receiveTransaction = new ReceiveTransaction(transaction);
+                byte[] payload = null;
+                using (var command = new SQLiteCommand("SELECT payload FROM " + DatabaseName + "WHERE hash = @target")) {
+                    command.Parameters.Add("@target", DbType.Binary, receiveTransaction.Target.Length).Value = receiveTransaction.Target;
+                    var reader = command.ExecuteReader();
+                    int i = 0;
+                    while (reader.Read()) {
+                        if (i >= 1) {
+                            throw new Exception("More than one target transactions found!");
+                        }
+                        payload = (byte[])reader["payload"];
+                        i++;
+                    }
+                }
+                return payload;
+            }
+            return null;
+        }
+
+        public bool DoubleSpendProtection(byte[] transaction) {
+            if (Transaction.GetTransactionType(transaction) == ReceiveTransaction.ReceiveTransactionType) {
+                ReceiveTransaction receiveTransaction = new ReceiveTransaction(transaction);
+                using (var command = new SQLiteCommand("SELECT payload FROM " + DatabaseName + "WHERE target = @target")) {
+                    command.Parameters.Add("@target", DbType.Binary, receiveTransaction.Target.Length).Value = receiveTransaction.Target;
+                    var reader = command.ExecuteReader();
+                    while (reader.Read()) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return true;
+        }
+        
+        public Account TransactionListToAccount(List<byte[]> transactions, bool fromSecureSource) {
+            List<byte[]> sortedTxs = Transaction.SortTransactions(transactions, fromSecureSource);
+            Account account = new Account(sortedTxs);
+            for (int i = 1; i < transactions.Count; i++) {
+                byte[] tx = transactions[i];
+                bool insert = account.InsertTransaction(tx, GetTargetTransaction(tx));
+
+            }
+            return account;
         }
 
         public class DbTxEntry {
@@ -143,8 +196,8 @@ namespace AnoBIT_Wallet {
                     return payload;
                 }
                 set {
-                    if (payload.Length > 200) { //TODO: make a function to check max size, or pass it as parameter
-                        throw new AnoBITCryptoException("Payload for transaction is too big (>32 bytes).");
+                    if (value.Length > Transaction.GetMaxSize(Type)) { //TODO: make a function to check max size, or pass it as parameter
+                        throw new AnoBITCryptoException(string.Format("Payload for transaction is too big (>{0] bytes for type of {1}).", value.Length, Type));
                     }
                     payload = value;
                 }

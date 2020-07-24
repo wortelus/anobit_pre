@@ -47,11 +47,6 @@ namespace AnoBIT_Wallet
         private string WalletPath;
         private string WalletName;
 
-        private string UnlockedPassword;
-
-
-        bool okChain = true;
-
         bool canCommunicate;
         public bool CanCommunicate {
             get {
@@ -116,7 +111,7 @@ namespace AnoBIT_Wallet
                 canCommunicate = false;
             }
             textBoxNetworkPort.Text = NetPort.ToString();
-            textBoxNetworkMaxConnections.Text = MasterNode;
+            //textBoxNetworkMaxConnections.Text = MasterNode;
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)

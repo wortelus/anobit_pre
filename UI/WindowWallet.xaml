@@ -19,7 +19,7 @@
                     </Grid>
                     <ListBox Height="Auto" HorizontalAlignment="Stretch" x:Name="listBoxTransactions" VerticalAlignment="Stretch" Margin="6,132,6,56" />
                     <Grid Height="101" HorizontalAlignment="Right" Margin="0,10,6,0" x:Name="gridBlocksInfo" VerticalAlignment="Top" Width="215">
-                        <TextBlock FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,10,0,0" x:Name="textBlockBlockMined" Text="Blocks Mined:" TextAlignment="Center" VerticalAlignment="Top" Width="195" FontStyle="Italic" />
+                        <TextBlock FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,10,0,0" x:Name="textBlockBlockMined" Text="Blocks Minted:" TextAlignment="Center" VerticalAlignment="Top" Width="195" FontStyle="Italic" />
                         <TextBlock FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,40,0,0" x:Name="textBlockBlockReward" Text="Reward for New Block:" TextAlignment="Center" VerticalAlignment="Top" Width="195" FontStyle="Italic" />
                         <TextBlock FontStyle="Italic" FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,70,0,0" x:Name="textBlockHalvingDelay" Text="Halving Delay:" TextAlignment="Center" VerticalAlignment="Top" Width="195" />
                     </Grid>
@@ -71,9 +71,9 @@
 
                 </Grid>
             </TabItem>
-            <TabItem Header="Offseed Addresses" x:Name="tabItemOffseedAddresses">
+            <TabItem Header="Offseed Addresses" x:Name="tabItemOffseedAddresses" Visibility="Hidden">
                 <Grid x:Name="gridOffseedAddresses">
-                    
+
                     <Image Cursor="Hand" Height="18" HorizontalAlignment="Right" Margin="0,24,0,0" x:Name="imageOffseedAddressCopy" Source="pack://siteoforigin:,,,/Resources/copy_24.png" Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top" Width="18" />
                     <Image Cursor="Hand" Height="18" HorizontalAlignment="Right" x:Name="imageOffseedAddressModifyLabel" Source="pack://siteoforigin:,,,/Resources/edit_24.png" Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top" Width="18" Margin="0,48,0,0"  />
                     <Image Cursor="Hand" Height="18" HorizontalAlignment="Right" x:Name="imageOffseedAddressAdd" Source="pack://siteoforigin:,,,/Resources/plusfile_24.png" Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top" Width="18"  />
@@ -117,10 +117,8 @@
                     <CheckBox x:Name="checkBoxBlockchainDistant" Content="Show Distant Transactions" HorizontalAlignment="Right" Margin="0,42,10,0" VerticalAlignment="Top" Height="21"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Network" x:Name="tabItemNetwork" TouchDown="tabItemNetwork_TouchDown">
+            <TabItem Header="Misc" x:Name="tabItemNetwork" TouchDown="tabItemNetwork_TouchDown">
                 <Grid>
-                    <Label x:Name="labelNetworkMaterNode" Content="Master Node:" HorizontalAlignment="Left" Margin="79,10,0,0" VerticalAlignment="Top" Width="85" HorizontalContentAlignment="Right"/>
-                    <TextBox x:Name="textBoxNetworkMaxConnections" HorizontalAlignment="Left" Margin="169,11,0,0" TextWrapping="Wrap" Width="108" VerticalAlignment="Top" IsUndoEnabled="False" IsEnabled="False" Height="24" Grid.ColumnSpan="2"/>
                     <Image x:Name="image" HorizontalAlignment="Left" Height="64" Margin="10,10,0,0" VerticalAlignment="Top" Width="64" Source="pack://siteoforigin:,,,/Resources/connections_64.png"/>
                     <TextBox x:Name="textBoxNetworkLog" Margin="10,97,10,58" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Text="AnoBIT Network Log started..." TextChanged="textBoxNetworkLog_TextChanged" IsReadOnly="True"/>
                     <TextBox x:Name="textBoxNetworkCommandLine" Margin="10,0,10,5" TextWrapping="Wrap" Height="48" VerticalAlignment="Bottom" Grid.ColumnSpan="2"/>
@@ -129,18 +127,24 @@
                     <Button x:Name="buttonChangeActiveAddress" Margin="282,43,10,0" VerticalAlignment="Top" Content="Change Active Address" Height="24" Click="buttonChangeActiveAddress_Click"/>
                     <TextBox x:Name="textBoxActiveAddress" TextWrapping="Wrap" Margin="282,11,10,0" VerticalAlignment="Top" Height="24"/>
                     <TextBlock x:Name="textBlockMinimumAmountPocket" Margin="16,76,16,0" TextWrapping="Wrap" VerticalAlignment="Top" TextAlignment="Right" Height="21"/>
+                    <Label x:Name="labelNetworkNodesCount" Content="Nodes Online:" HorizontalAlignment="Left" Margin="79,9,0,0" VerticalAlignment="Top" Width="85" HorizontalContentAlignment="Right"/>
+                    <TextBox x:Name="textBoxNetworkNodesCount" HorizontalAlignment="Left" Margin="169,11,0,0" TextWrapping="Wrap" Width="108" VerticalAlignment="Top" IsUndoEnabled="False" IsEnabled="False" Height="24"/>
                 </Grid>
             </TabItem>
-            <TabItem Header="Coins">
+            <TabItem Header="Network">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <ListBox x:Name="listBoxCoinsPrinting" Margin="10,42,10,0"/>
-                    <Label Content="Printing:" HorizontalAlignment="Left" VerticalAlignment="Top" Height="27" Margin="10,10,0,0" Width="337"/>
                     <ListBox x:Name="listBoxCoinsMining" Margin="10,32,10,10" Grid.Row="1"/>
-                    <Label Content="Mining:" HorizontalAlignment="Left" VerticalAlignment="Top" Height="27" Margin="10,5,0,0" Width="337" Grid.Row="1"/>
+                    <Label Content="Minting History:" HorizontalAlignment="Left" VerticalAlignment="Top" Height="27" Margin="10,5,0,0" Width="337" Grid.Row="1"/>
+                    <Grid Height="162" HorizontalAlignment="Right" Margin="0,10,6,0" x:Name="gridBlocksInfo_Copy" VerticalAlignment="Top" Width="520">
+                        <TextBlock FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,10,0,0" x:Name="textBlockBlockMined1" Text="Your Active Delegated Weight:" TextAlignment="Left" VerticalAlignment="Top" Width="339" FontStyle="Italic" />
+                        <TextBlock FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,40,0,0" x:Name="textBlockBlockReward1" Text="Online Voting Weight of the Network:" TextAlignment="Left" VerticalAlignment="Top" Width="339" FontStyle="Italic" />
+                        <TextBlock FontStyle="Italic" FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,70,0,0" x:Name="textBlockHalvingDelay1" Text="Total Circulation / Voting Weight:" TextAlignment="Left" VerticalAlignment="Top" Width="339" />
+                        <TextBlock FontWeight="Normal" Height="25" HorizontalAlignment="Left" Margin="10,100,0,0" x:Name="textBlockBlockMined1_Copy" Text="Unminted Coefficient Index:" TextAlignment="Left" VerticalAlignment="Top" Width="339" FontStyle="Italic" />
+                    </Grid>
                 </Grid>
             </TabItem>
         </TabControl>
