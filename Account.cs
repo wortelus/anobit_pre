@@ -10,7 +10,7 @@ namespace AnoBIT_Wallet {
     /// This is the object for BlockchainHandler class consisting of Accounts.
     /// Account gets loaded from database, and then the transactions are verified here in this object
     /// while parameters from the database and the network are passed from the BlockchainHandler class.
-    /// If the InsetrTransaction goes true/positive, BlockchainHandler should update the Database.
+    /// If the InsertTransaction goes true/positive, BlockchainHandler should update the Database.
     /// BlockchainHandler should keep a track that the database and Account objects are consistent, although
     /// not all must be loaded from the database to save RAM.
     /// This class should also notify BlockchainHandler of a possible fork, which then passes the network request to vote
@@ -67,6 +67,8 @@ namespace AnoBIT_Wallet {
                 bool maincheck = false;
 
                 if (precheck == false) {
+                    //precheck failed, if the previous hashes are combating
+                    //let network decide the fate of 2 combating transactions
                     return false;
                 }
 
