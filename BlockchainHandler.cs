@@ -79,7 +79,7 @@ namespace AnoBIT_Wallet {
                 if (comparedChains < 0) {
                     //if tempBlockchain is shorter, needs to be filled up from database
                     for (int i = sortedTx.Count + comparedChains; i < sortedTx.Count; i++) {
-                        if (!tempBlockchain[ripemd].InsertTransaction(sortedTx[i], GetTargetTransaction(sortedTx[i]))) {
+                        if (tempBlockchain[ripemd].InsertTransaction(sortedTx[i], GetTargetTransaction(sortedTx[i])) != TxCheckErrorCode.Success) {
                             //transaction from db is not accepted
                             //TODO: handling
 
@@ -108,7 +108,7 @@ namespace AnoBIT_Wallet {
                 tempBlockchain.Add(ripemd, new Account(ripemd));
 
                 for (int i = 0; i < sortedTx.Count; i++) {
-                    if (!tempBlockchain[ripemd].InsertTransaction(sortedTx[i], GetTargetTransaction(sortedTx[i]))) {
+                    if (tempBlockchain[ripemd].InsertTransaction(sortedTx[i], GetTargetTransaction(sortedTx[i])) != TxCheckErrorCode.Success) {
                         //transaction from db is not accepted
                         //TODO: handling
 
@@ -190,8 +190,15 @@ namespace AnoBIT_Wallet {
             Account account = new Account(sortedTxs);
             for (int i = 1; i < transactions.Count; i++) {
                 byte[] tx = transactions[i];
-                bool insert = account.InsertTransaction(tx, GetTargetTransaction(tx));
-
+                TxCheckErrorCode insert = account.InsertTransaction(tx, GetTargetTransaction(tx));
+                if (insert != TxCheckErrorCode.Success) {
+                    throw new Exception(string.Format("TransactionListToAccount: accounts couldn't be built, {0} has an transaction error {1} at height {2}. fromSecureSource={3}", 
+                        Transaction.GetTransactionPublicKey(transactions[0]),
+                        insert,
+                        i,
+                        fromSecureSource.ToString()
+                        ));
+                }
             }
             return account;
         }

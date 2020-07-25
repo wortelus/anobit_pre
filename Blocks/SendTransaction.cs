@@ -104,28 +104,28 @@ namespace AnoBIT_Wallet.Blocks {
             return null;
         }
 
-        public bool VerifyWithReceiveTransaction(ReceiveTransaction receiveTransaction) {
+        public TxCheckErrorCode VerifyWithReceiveTransaction(ReceiveTransaction receiveTransaction) {
             //verify amount
             if (receiveTransaction.Amount + GenesisBlock.TransactionFee != Amount) {
-                return false;
+                return TxCheckErrorCode.InvalidTargetTx;
             }
 
             //verify receive target and hash
             if (!receiveTransaction.Target.SequenceEqual(this.GetHash())) {
-                return false;
+                return TxCheckErrorCode.InvalidTargetTx;
             }
 
             //verify send target
             if (!receiveTransaction.SenderPublicKey.SequenceEqual(Receiver)) {
-                return false;
+                return TxCheckErrorCode.InvalidTargetTx;
             }
 
             //verify is send transaction is already spent
             if (SpentBy != null /*&& sendTransaction.SpentBy.SequenceEqual(receiveTransaction.GetHash()) == false*/) {
-                return false;
+                return TxCheckErrorCode.TargetTxAlreadySpent;
             }
 
-            return true;
+            return TxCheckErrorCode.Success;
         }
     }
 

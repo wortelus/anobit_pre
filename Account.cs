@@ -59,42 +59,54 @@ namespace AnoBIT_Wallet {
             return false;
         }*/
 
-        public bool InsertTransaction(byte[] transaction, byte[] targetTransaction) {
-            byte type = Transaction.GetTransactionType(transaction);
-
-            try {
-                bool precheck = TransactionPrecheck(transaction);
-                bool maincheck = false;
-
-                if (precheck == false) {
-                    //precheck failed, if the previous hashes are combating
-                    //let network decide the fate of 2 combating transactions
-                    return false;
+        public TxCheckErrorCode InsertTransaction(byte[] transaction, byte[] targetTransaction) {
+            lock (OpLock) {
+                if (transaction == null || transaction.Length == 0) {
+                    return TxCheckErrorCode.NullTx;
                 }
 
-                if (type == SendTransaction.SendTransactionType || type == SendTransaction.SendTransactionTypeMessage) {
-                    try {
-                        SendTransaction sendTransaction = new SendTransaction(transaction);
-                        maincheck = SendTransactionPrecheck(sendTransaction);
+                byte type = Transaction.GetTransactionType(transaction);
 
-                    } catch (OverflowException) {
-                        throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
+                try {
+                    TxCheckErrorCode precheck = TransactionPrecheck(transaction);
+                    TxCheckErrorCode maincheck = TxCheckErrorCode.Unknown;
+
+                    if (precheck != TxCheckErrorCode.Success) {
+                        //precheck failed, if the previous hashes are combating
+                        //let network decide the fate of 2 combating transactions
+                        return precheck;
                     }
-                } else if (type == ReceiveTransaction.ReceiveTransactionType) {
-                    try {
-                        ReceiveTransaction receiveTransaction = new ReceiveTransaction(transaction);
-                        SendTransaction sendTargetTransaction = new SendTransaction(targetTransaction);
-                        maincheck = ReceiveTransactionPrecheck(receiveTransaction, sendTargetTransaction);
-                    } catch (OverflowException) {
-                        throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
+
+                    if (type == SendTransaction.SendTransactionType || type == SendTransaction.SendTransactionTypeMessage) {
+                        try {
+                            SendTransaction sendTransaction = new SendTransaction(transaction);
+                            maincheck = SendTransactionPrecheck(sendTransaction);
+
+                        } catch (OverflowException) {
+                            //throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
+                            return TxCheckErrorCode.BalanceOverflow;
+                        }
+                    } else if (type == ReceiveTransaction.ReceiveTransactionType) {
+                        try {
+                            if (targetTransaction == null || targetTransaction.Length == 0) {
+                                maincheck = TxCheckErrorCode.NullTargetTx;
+                            } else {
+                                ReceiveTransaction receiveTransaction = new ReceiveTransaction(transaction);
+                                SendTransaction sendTargetTransaction = new SendTransaction(targetTransaction);
+                                maincheck = ReceiveTransactionPrecheck(receiveTransaction, sendTargetTransaction);
+                            }
+                        } catch (OverflowException) {
+                            //throw new OverflowException(type + " balance overflow exceeded at " + AnoBITCrypto.RIPEMD160ToAddress(RIPEMD160));
+                            return TxCheckErrorCode.BalanceOverflow;
+                        }
+                    } else if (type == ChangeTransaction.ChangeTransactionType) {
+                        ChangeTransaction changeTransaction = new ChangeTransaction(transaction);
+                        Representative = changeTransaction.Representative;
                     }
-                } else if (type == ChangeTransaction.ChangeTransactionType) {
-                    ChangeTransaction changeTransaction = new ChangeTransaction(transaction);
-                    Representative = changeTransaction.Representative;
+                    return Transaction.GetTxCheckErrorCodeFromArray(new TxCheckErrorCode[] { precheck, maincheck });
+                } catch (Exception ex) {
+                    throw new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
                 }
-                return maincheck && precheck;
-            } catch (Exception ex) {
-                throw new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
             }
         }
 
@@ -109,52 +121,57 @@ namespace AnoBIT_Wallet {
             return output;
         }
 
-        public bool SendTransactionPrecheck(SendTransaction sendTransaction) {
+        public TxCheckErrorCode SendTransactionPrecheck(SendTransaction sendTransaction) {
             lock (OpLock) {
                 TransactionPrecheck(sendTransaction.ToByteArray());
-                ulong balance = GetBalance();
-                if (sendTransaction.Amount > balance) {
-                    return false;
+                try {
+                    ulong balance = GetBalance();
+                    if (sendTransaction.Amount > balance) {
+                        return TxCheckErrorCode.InsufficientBalance;
+                    }
+                } catch (OverflowException) {
+                    return TxCheckErrorCode.BalanceOverflow;
                 }
             }
-            return true;
+            return TxCheckErrorCode.Success;
         }
 
-        public bool ReceiveTransactionPrecheck(ReceiveTransaction receiveTransaction, SendTransaction targetTransaction) {
+        public TxCheckErrorCode ReceiveTransactionPrecheck(ReceiveTransaction receiveTransaction, SendTransaction targetTransaction) {
             lock (OpLock) {
                 byte[] hash = receiveTransaction.GetHash();
-                bool sendCheck = targetTransaction.VerifyWithReceiveTransaction(receiveTransaction);
-                if (sendCheck) {
-                    return true;
+                TxCheckErrorCode sendCheck = targetTransaction.VerifyWithReceiveTransaction(receiveTransaction);
+                if (sendCheck == TxCheckErrorCode.Success) {
+                    return TxCheckErrorCode.Success;
                 } else {
-                    return false;
+                    return sendCheck;
                 }
             }
         }
 
-        public bool TransactionPrecheck(byte[] transaction) {
+        public TxCheckErrorCode TransactionPrecheck(byte[] transaction) {
             lock (OpLock) {
                 byte type = Transaction.GetTransactionType(transaction);
                 if (RootTransaction == null && type != RootTransaction.RootTransactionType) {
-                    return false;
+                    //root transaction not loaded, consider resync
+                    return TxCheckErrorCode.InvalidPreviousHash;
                 }
                 if (Transaction.GetTransactionRAP(transaction) != GenesisBlock.RAP) {
-                    return false;
+                    return TxCheckErrorCode.InvalidRAP;
                 }
                 if (!Transaction.GetTransactionPreviousHash(transaction).SequenceEqual(GetLastPreviousHash())) {
-                    return false;
+                    return TxCheckErrorCode.InvalidPreviousHash;
                 }
                 byte[] publicKey = Transaction.GetTransactionPublicKey(transaction);
                 if (publicKey != null && !AnoBITCrypto.PublicKeyToRIPEMD160(publicKey).SequenceEqual(RIPEMD160)) {
-                    return false;
+                    return TxCheckErrorCode.Unknown;
                 }
                 if (!Transaction.HasValidNonce(
                     Transaction.GetDifficulty(Transaction.GetTransactionType(transaction)),
                     transaction)) {
-                    return false;
+                    return TxCheckErrorCode.InvalidNonce;
                 }
 
-                return true;
+                return TxCheckErrorCode.Success;
             }
         }
 
@@ -163,7 +180,6 @@ namespace AnoBIT_Wallet {
                 if (Blocks.Count == 0) {
                     return GenesisBlock.GetHash();
                 }
-
                 return Transaction.GetTransactionPreviousHash(Blocks[Blocks.Count - 1]);
             }
         }

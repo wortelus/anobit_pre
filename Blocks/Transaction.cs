@@ -234,6 +234,20 @@ namespace AnoBIT_Wallet.Blocks {
             return account;
         }
 
+        /// <summary>
+        /// Check an array of error codes for validating an transaction.
+        /// </summary>
+        /// <param name="checkErrorCodes">Transaction error codes array.</param>
+        /// <returns>The first non-success error code will be returned.</returns>
+        public static TxCheckErrorCode GetTxCheckErrorCodeFromArray(params TxCheckErrorCode[] checkErrorCodes) {
+            for (int i = 0; i < checkErrorCodes.Length; i++) {
+                if (checkErrorCodes[i] != TxCheckErrorCode.Success) {
+                    return checkErrorCodes[i];
+                }
+            }
+            return TxCheckErrorCode.Success;
+        }
+
         public static List<byte[]> SortTransactions(List<byte[]> transactions, bool fromSecureSource) {
             byte[] hashGenesisBlock = GenesisBlock.GetHash();
             byte[] lastHash = hashGenesisBlock;
