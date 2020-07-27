@@ -13,6 +13,9 @@ namespace AnoBIT_Wallet.Blocks {
         public const byte SendTransactionDifficulty = 18;
         public const byte SendTransactionMessageDifficulty = 20;
 
+        public const int SendTransactionBaseSize = 132;
+        public const int SendTransactionMessageBaseSize = 164;
+
         public const int SendTransactionMinSize = 132 + 1;
         public const int SendTransactionMessageMinSize = 164 + 1;
 

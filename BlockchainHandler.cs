@@ -48,16 +48,24 @@ namespace AnoBIT_Wallet {
         }
 
         private bool ToAccountDictionary(byte[] transaction) {
-            //tempBlockchain.
+            //sync with database
+            //TODO: possible memory leak attack
+            LoadFromDbByOwner(Transaction.GetTransactionPublicKey(transaction));
+            DbTxEntry dbTxEntry = new DbTxEntry(transaction);
+            bool success = tempBlockchain[dbTxEntry.RIPEMD160].InsertTransaction(transaction);
             return false;
         }
 
         private void LoadFromDbByOwner(byte[] publicKey) {
             byte[] ripemd = AnoBITCrypto.PublicKeyToRIPEMD160(publicKey);
+            LoadFromDbByRIPEMD(ripemd);
+        }
+
+        private void LoadFromDbByRIPEMD(byte[] ripemd) {
             List<byte[]> payload = new List<byte[]>();
 
-            using (var command = new SQLiteCommand("SELECT payload FROM + " + DatabaseName + " WHERE owner = @owner", DbConnection)) {
-                command.Parameters.Add("@owner", DbType.Binary, publicKey.Length).Value = publicKey;
+            using (var command = new SQLiteCommand("SELECT payload FROM + " + DatabaseName + " WHERE ownerhash = @ownerhash", DbConnection)) {
+                command.Parameters.Add("@ownerhash", DbType.Binary, ripemd.Length).Value = ripemd;
                 var reader = command.ExecuteReader();
                 int i = 0;
                 while (reader.Read()) {
@@ -139,7 +147,7 @@ namespace AnoBIT_Wallet {
                     command.Parameters.Add("@target", DbType.Binary, dbTxEntry.Target.Length).Value = dbTxEntry.Target;
                     command.Parameters.Add("@payload", DbType.Binary, dbTxEntry.Payload.Length).Value = dbTxEntry.Payload;
                     int l = command.ExecuteNonQuery();
-                    if (l != 1) {
+                    if (l < 1) {
                         return false;
                     }
                     return true;
@@ -204,6 +212,35 @@ namespace AnoBIT_Wallet {
         }
 
         public class DbTxEntry {
+            public DbTxEntry(byte[] transaction) {
+                Exception exception = new Exception("Error during adding to DbTxEntry.");
+                Type = Transaction.GetTransactionType(transaction);
+                if (Type == 255) {
+                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.InvalidType);
+                    throw exception;
+                }
+
+                int minSize = Transaction.GetMinSize(Type);
+                int maxSize = Transaction.GetMaxSize(Type);
+
+                if (transaction.Length < minSize) {
+                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.TooShort);
+                    throw exception;
+                }
+                if (transaction.Length > maxSize) {
+                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.TooLong);
+                    throw exception;
+                }
+
+                Hash = Transaction.TxHashFunction(transaction);
+                PreviousHash = Transaction.GetTransactionPreviousHash(transaction);
+                SenderPublicKey = Transaction.GetTransactionPublicKey(transaction);
+                Target = Transaction.GetTarget(transaction);
+                Amount = Transaction.GetAmount(transaction);
+                Signature = Transaction.GetSignature(transaction);
+                Payload = transaction;
+            }
+
             public byte Type { get; set; }
 
             private byte[] hash;
@@ -291,7 +328,9 @@ namespace AnoBIT_Wallet {
                 }
                 set {
                     if (value.Length > Transaction.GetMaxSize(Type)) { //TODO: make a function to check max size, or pass it as parameter
-                        throw new AnoBITCryptoException(string.Format("Payload for transaction is too big (>{0] bytes for type of {1}).", value.Length, Type));
+                        throw new AnoBITCryptoException(string.Format("Payload for transaction is too big (>{0} bytes for type of {1}).", value.Length, Type));
+                    } else if (value.Length < Transaction.GetMinSize(Type)) {
+                        throw new AnoBITCryptoException(string.Format("Payload for transaction is too small (<{0} bytes for type of {1}).", value.Length, Type));
                     }
                     payload = value;
                 }

@@ -11,6 +11,7 @@ namespace AnoBIT_Wallet.Blocks {
         public const byte ReceiveTransactionDiffiulty = 16;
         public override byte Difficulty => ReceiveTransactionDiffiulty;
 
+        public const int ReceiveTransactionBaseSize = 144;
         public const int ReceiveTransactionMinSize = 144 + 1;
         public const int ReceiveTransactionMaxSize = 144 + MaxSignatureSize;
 

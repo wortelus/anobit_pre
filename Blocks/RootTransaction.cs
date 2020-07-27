@@ -11,6 +11,7 @@ namespace AnoBIT_Wallet.Blocks {
         public const byte RootTransactionDifficulty = 20;
         public override byte Difficulty => RootTransactionDifficulty;
 
+        public const int RootTransactionBaseSize = 124;
         public const int RootTransactionMinSize = 124 + 1;
         public const int RootTransactionMaxSize = 124 + MaxSignatureSize;
 

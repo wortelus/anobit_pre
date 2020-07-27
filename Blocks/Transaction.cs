@@ -94,6 +94,19 @@ namespace AnoBIT_Wallet.Blocks {
             }
         }
 
+        public static ulong GetAmount(byte[] transaction) {
+            switch (GetTransactionType(transaction)) {
+                case SendTransaction.SendTransactionType:
+                    return BitConverter.ToUInt64(transaction.Skip(124).Take(8).ToArray(), 0);
+                case SendTransaction.SendTransactionTypeMessage:
+                    return BitConverter.ToUInt64(transaction.Skip(124).Take(8).ToArray(), 0);
+                case ReceiveTransaction.ReceiveTransactionType:
+                    return BitConverter.ToUInt64(transaction.Skip(136).Take(8).ToArray(), 0);
+                default:
+                    return 0;
+            }
+        }
+
         public static byte[] GetTarget(byte[] transaction) {
             switch (GetTransactionType(transaction)) {
                 case SendTransaction.SendTransactionType:
@@ -112,7 +125,11 @@ namespace AnoBIT_Wallet.Blocks {
         }
 
         public static int GetMinSize(byte[] transaction) {
-            switch (GetTransactionType(transaction)) {
+            return GetMinSize(GetTransactionType(transaction));
+        }
+
+        public static int GetMinSize(byte type) {
+            switch (type) {
                 case SendTransaction.SendTransactionType:
                     return SendTransaction.SendTransactionMinSize;
                 case SendTransaction.SendTransactionTypeMessage:
@@ -126,6 +143,10 @@ namespace AnoBIT_Wallet.Blocks {
                 default:
                     return 0;
             }
+        }
+
+        public static int GetMaxSize(byte[] transaction) {
+            return GetMaxSize(GetTransactionType(transaction));
         }
 
         public static int GetMaxSize(byte type) {
@@ -145,20 +166,22 @@ namespace AnoBIT_Wallet.Blocks {
             }
         }
 
-        public static int GetMaxSize(byte[] transaction) {
+        public static byte[] GetSignature(byte[] transaction) {
+            int txLength = transaction.Length;
+
             switch (GetTransactionType(transaction)) {
                 case SendTransaction.SendTransactionType:
-                    return SendTransaction.SendTransactionMaxSize;
+                    return transaction.Skip(SendTransaction.SendTransactionBaseSize).Take(txLength - SendTransaction.SendTransactionBaseSize).ToArray();
                 case SendTransaction.SendTransactionTypeMessage:
-                    return SendTransaction.SendTransactionMessageMaxSize;
+                    return transaction.Skip(SendTransaction.SendTransactionMessageBaseSize).Take(txLength - SendTransaction.SendTransactionMessageBaseSize).ToArray();
                 case ReceiveTransaction.ReceiveTransactionType:
-                    return ReceiveTransaction.ReceiveTransactionMaxSize;
+                    return transaction.Skip(ReceiveTransaction.ReceiveTransactionBaseSize).Take(txLength - ReceiveTransaction.ReceiveTransactionBaseSize).ToArray();
                 case RootTransaction.RootTransactionType:
-                    return RootTransaction.RootTransactionMaxSize;
+                    return transaction.Skip(RootTransaction.RootTransactionBaseSize).Take(txLength - RootTransaction.RootTransactionBaseSize).ToArray();
                 case ChangeTransaction.ChangeTransactionType:
-                    return ChangeTransaction.ChangeTransactionMaxSize;
+                    return transaction.Skip(ChangeTransaction.ChangeTransactionBaseSize).Take(txLength - ChangeTransaction.ChangeTransactionBaseSize).ToArray();
                 default:
-                    return 0;
+                    return null;
             }
         }
 
