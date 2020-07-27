@@ -105,7 +105,9 @@ namespace AnoBIT_Wallet {
                     }
                     return Transaction.GetTxCheckErrorCodeFromArray(new TxCheckErrorCode[] { precheck, maincheck });
                 } catch (Exception ex) {
-                    throw new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
+                    Exception exception = new Exception("an error occured during adding send transaction to blockchain: " + ex.Message);
+                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.Unknown);
+                    throw exception;
                 }
             }
         }

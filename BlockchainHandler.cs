@@ -47,13 +47,32 @@ namespace AnoBIT_Wallet {
             return false;
         }
 
-        private bool ToAccountDictionary(byte[] transaction) {
+        private TxCheckErrorCode ToAccountDictionary(byte[] transaction) {
             //sync with database
             //TODO: possible memory leak attack
             LoadFromDbByOwner(Transaction.GetTransactionPublicKey(transaction));
-            DbTxEntry dbTxEntry = new DbTxEntry(transaction);
-            bool success = tempBlockchain[dbTxEntry.RIPEMD160].InsertTransaction(transaction);
-            return false;
+
+            //TODO: log exception and return database error
+            bool success = DoubleSpendProtection(transaction);
+            if (!success) {
+                return TxCheckErrorCode.DoubleSpend;
+            }
+
+            DbTxEntry dbTxEntry;
+            TxCheckErrorCode txCheckErrorCode;
+            try {
+                dbTxEntry = new DbTxEntry(transaction);
+                txCheckErrorCode = tempBlockchain[dbTxEntry.RIPEMD160].InsertTransaction(transaction, GetTargetTransaction(transaction));
+
+            } catch (Exception e) {
+                return (TxCheckErrorCode)e.Data["TxCheckErrorCode"];
+            }
+
+            if (txCheckErrorCode != TxCheckErrorCode.Success) {
+                return txCheckErrorCode;
+            }
+            success = PrepareInsertStatement(dbTxEntry);
+            return success ? TxCheckErrorCode.Success : TxCheckErrorCode.Unknown;
         }
 
         private void LoadFromDbByOwner(byte[] publicKey) {
@@ -167,7 +186,9 @@ namespace AnoBIT_Wallet {
                     int i = 0;
                     while (reader.Read()) {
                         if (i >= 1) {
-                            throw new Exception("More than one target transactions found!");
+                            Exception exception = new Exception("More than one target transactions found in database!");
+                            exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.Fatal);
+                            throw exception;
                         }
                         payload = (byte[])reader["payload"];
                         i++;
@@ -214,9 +235,11 @@ namespace AnoBIT_Wallet {
         public class DbTxEntry {
             public DbTxEntry(byte[] transaction) {
                 Exception exception = new Exception("Error during adding to DbTxEntry.");
+                exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.Unknown);
+
                 Type = Transaction.GetTransactionType(transaction);
                 if (Type == 255) {
-                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.InvalidType);
+                    exception.Data["TxCheckErrorCode"] = TxCheckErrorCode.InvalidType;
                     throw exception;
                 }
 
@@ -224,11 +247,11 @@ namespace AnoBIT_Wallet {
                 int maxSize = Transaction.GetMaxSize(Type);
 
                 if (transaction.Length < minSize) {
-                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.TooShort);
+                    exception.Data["TxCheckErrorCode"] = TxCheckErrorCode.OutOfBounds;
                     throw exception;
                 }
                 if (transaction.Length > maxSize) {
-                    exception.Data.Add("TxCheckErrorCode", TxCheckErrorCode.TooLong);
+                    exception.Data["TxCheckErrorCode"] = TxCheckErrorCode.OutOfBounds;
                     throw exception;
                 }
 
